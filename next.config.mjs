@@ -1,10 +1,8 @@
 /** @type {import('next').NextConfig} */
 
-const isProd = process.env.PRODUCTION
 const nextConfig = {
     output: 'export',
-    basePath: isProd ? '/wallan-tuntemattomat' : '', 
-    assetPrefix: isProd ? '/wallan-tuntemattomat/' : '', 
+    basePath: '/nextjs-github-pages', 
     images: { unoptimized: true }
 };
 
