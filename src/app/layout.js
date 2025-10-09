@@ -21,6 +21,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <meta property="og:title" content="Wallan Tuntemattomat" />
+      <meta property="og:image" content="https://www.wallantuntemattomat.fi/logo.jpg" />
       <meta property="og:description" content="Wallan Tuntemattomat on vuonna 2012 alkunsa saanut satakuntalainen iskelmä ja bilemusaa soittava kahden miehen orkesteri" />
       <head>
         <title>Wallan Tuntemattomat</title>
