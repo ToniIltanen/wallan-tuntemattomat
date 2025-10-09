@@ -7,7 +7,7 @@ export default function Home() {
    <Box sx={{ flexGrow: 12 }}>
       <Grid container spacing={2}>
         <Grid item size={12}>
-            <Image style={{margin: "0 auto", paddingTop: "100px", display: "block"}} src="/wallan-tuntemattomat/logo.jpg" alt="Wallan Tuntemattomat Logo" width={"320"} height={"320"}/>
+            <Image style={{margin: "0 auto", paddingTop: "100px", display: "block"}} src="./logo.jpg" alt="Wallan Tuntemattomat Logo" width={"320"} height={"320"}/>
         </Grid>
         <Grid item size={12}>
           <Box style={{textAlign: "center"}}>
