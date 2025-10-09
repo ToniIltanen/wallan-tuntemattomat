@@ -21,7 +21,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <meta property="og:title" content="Wallan Tuntemattomat" />
+      <meta property="og:description" content="Wallan Tuntemattomat on vuonna 2012 alkunsa saanut satakuntalainen iskelmä ja bilemusaa soittava kahden miehen orkesteri" />
       <title>Wallan Tuntemattomat</title>
+      <description>Wallan Tuntemattomat on vuonna 2012 alkunsa saanut satakuntalainen iskelmä ja bilemusaa soittava kahden miehen orkesteri</description>
       <body style={{backgroundColor: "black", color: "white", fontFamily: "Tahoma, Helvetica, sans-serif"}}>
         <AppRouterCacheProvider>
         {children}
