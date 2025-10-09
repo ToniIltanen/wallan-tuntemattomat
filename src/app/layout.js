@@ -22,7 +22,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <meta property="og:title" content="Wallan Tuntemattomat" />
       <title>Wallan Tuntemattomat</title>
-      <body>
+      <body style={{backgroundColor: "black", color: "white", fontFamily: "Tahoma, Helvetica, sans-serif"}}>
         <AppRouterCacheProvider>
         {children}
         </AppRouterCacheProvider>
