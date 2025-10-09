@@ -1,4 +1,7 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const isProd = process.env.NODE_ENV === 'production';
 
-export default nextConfig;
+module.exports = { 
+    basePath: isProd ? '/wallan-tuntemattomat' : '', assetPrefix: isProd ? '/wallan-tuntemattomat/' : '', 
+    images: { unoptimized: true } 
+};
