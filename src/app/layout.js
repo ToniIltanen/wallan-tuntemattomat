@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,6 +27,7 @@ export default function RootLayout({ children }) {
       <body style={{backgroundColor: "black", color: "white", fontFamily: "Tahoma, Helvetica, sans-serif"}}>
         <AppRouterCacheProvider>
         {children}
+        <GoogleAnalytics gaId="G-V2K3L50G8N" />
         </AppRouterCacheProvider>
       </body>
     </html>
