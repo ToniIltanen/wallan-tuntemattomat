@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
       <meta property="og:title" content="Wallan Tuntemattomat" />
       <meta property="og:image" content="https://www.wallantuntemattomat.fi/logo.jpg" />
       <meta property="og:description" content="Wallan Tuntemattomat on vuonna 2012 alkunsa saanut satakuntalainen iskelmä ja bilemusaa soittava kahden miehen orkesteri" />
-      <body style={{backgroundColor: "black", color: "white", fontFamily: "Tahoma, Helvetica, sans-serif"}}>
+      <body>
         <AppRouterCacheProvider>
         {children}
         <GoogleAnalytics gaId="G-V2K3L50G8N" />
