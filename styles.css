@@ -179,14 +179,14 @@ h3 {
   margin: 0;
   line-height: 0.96;
   letter-spacing: 0;
-  font-family: "Tahoma";
 }
 
 h1 {
   max-width: 900px;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: Tahoma, "Times New Roman", serif;
   font-size: clamp(3.1rem, 11.2vw, 3.8rem);
   font-weight: 900;
+  text-transform: uppercase;
 }
 
 h1 span {
