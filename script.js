@@ -117,7 +117,7 @@ async function fetchBuukkaaHtml() {
   for (const buildProxyUrl of CORS_PROXY_URLS) {
     try {
       const separator = buildProxyUrl(BUUKKAA_URL).includes("?") ? "&" : "?";
-      return await fetchText(`${buildProxyUrl(BUUKKAA_URL)}${separator}_=${Date.now()}`);
+      return await fetchText(BUUKKAA_URL);
     } catch (error) {
       lastError = error;
     }
