@@ -132,33 +132,70 @@ function parseEventList(list) {
   });
 }
 
-async function fetchText(url) {
-  const response = await fetch(url, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`);
+function isLocalFileContext() {
+  try {
+    return location.protocol === 'file:' || location.origin === 'null' || !location.origin;
+  } catch (e) {
+    return false;
   }
+}
 
-  return response.text();
+async function fetchText(url) {
+  const controller = new AbortController();
+  const timeout = 12000; // 12s timeout per request
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, { cache: "no-store", mode: "cors", signal: controller.signal });
+    clearTimeout(id);
+
+    if (!response.ok) {
+      throw new Error(`Request failed: ${response.status}`);
+    }
+
+    return await response.text();
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+}
+function verifyFetchedHtml(html) {
+  if (!html || typeof html !== "string") return false;
+  if (/Tulevat/i.test(html)) return true;
+  if (/\d{1,2}\.\d{1,2}\.\d{4}/.test(html)) return true;
+  return false;
 }
 
 async function fetchBuukkaaHtml() {
-  let lastError;
+  let lastError = null;
 
   for (const buildProxyUrl of CORS_PROXY_URLS) {
     const proxyUrl = buildProxyUrl(BUUKKAA_URL);
-
     try {
-      return await fetchText(proxyUrl);
+      console.info(`Fetching gigs via: ${proxyUrl}`);
+      const html = await fetchText(proxyUrl);
+
+      if (verifyFetchedHtml(html)) {
+        console.info(`Successfully fetched gig HTML from: ${proxyUrl}`);
+        return html;
+      }
+
+      console.warn(`Fetched HTML from ${proxyUrl} did not contain expected gig data.`);
     } catch (error) {
       lastError = error;
       console.warn(`Failed to fetch upcoming gigs from proxy: ${proxyUrl}`, error);
     }
   }
 
-  throw lastError;
+  throw lastError || new Error("Unable to fetch gigs from any proxy.");
 }
 
 async function loadEvents() {
+  if (isLocalFileContext()) {
+    console.warn('Page loaded from file:// (Origin null). Browsers block cross-origin requests from this context. Serve the site via a local HTTP server (e.g. `python3 -m http.server`) to enable live fetching. Using static event fallback.');
+    return;
+  }
+
   try {
     const html = await fetchBuukkaaHtml();
     renderEvents(parseEventsFromHtml(html));
@@ -167,4 +204,21 @@ async function loadEvents() {
   }
 }
 
-loadEvents();
+async function loadCachedEventsFirst() {
+  try {
+    const res = await fetch('data/events.json', { cache: 'no-store' });
+    if (res.ok) {
+      const events = await res.json();
+      if (Array.isArray(events) && events.length > 0) {
+        eventsGrid && (eventsGrid.dataset.eventsSource = 'cached');
+        return renderEvents(events);
+      }
+    }
+  } catch (e) {
+    // ignore and fallback to live fetch
+  }
+
+  await loadEvents();
+}
+
+loadCachedEventsFirst();
