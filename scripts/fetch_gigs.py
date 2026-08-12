@@ -19,7 +19,13 @@ except ImportError:
     requests = None
 
 BUUKKAA_URL = "https://buukkaa-bandi.fi/fi/band/wallan-tuntemattomat"
-ALLORIGINS = "https://api.allorigins.win/raw?url="
+ALLORIGINS_RAW = "https://api.allorigins.win/raw?url="
+CODTABS_PROXY = "https://api.codetabs.com/v1/proxy?quest="
+PROXY_URLS = [
+    BUUKKAA_URL,
+    ALLORIGINS_RAW + urllib.parse.quote(BUUKKAA_URL, safe=""),
+    CODTABS_PROXY + urllib.parse.quote(BUUKKAA_URL, safe="")
+]
 OUT_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "events.json")
 
 def fetch_html(url, retries=3, timeout=30):
@@ -81,17 +87,26 @@ def html_looks_complete(html_text):
 
 
 def find_upcoming_list(html_text):
-    # try to find the 'Tulevat' heading, then the next <ul> block
+    # Prefer the explicit gig calendar list if present.
+    match = re.search(
+        r'(<ul[^>]+class=["\']?[^>]*gig-calendar__gigs[^>]*["\']?[^>]*>.*?</ul>)',
+        html_text,
+        flags=re.S | re.I,
+    )
+    if match:
+        return match.group(1)
+
+    # fallback: try to find the 'Tulevat' heading and the next <ul>
     idx = html_text.lower().find("tulevat")
     if idx != -1:
         ul_start = html_text.find("<ul", idx)
         if ul_start != -1:
             ul_end = html_text.find("</ul>", ul_start)
             if ul_end != -1:
-                return html_text[ul_start:ul_end+6]
+                return html_text[ul_start:ul_end+5]
 
     # fallback: scan all <ul> blocks and pick first one containing a Finnish date
-    uls = re.findall(r'(<ul[^>]*>.*?</ul>)', html_text, flags=re.S|re.I)
+    uls = re.findall(r'(<ul[^>]*>.*?</ul>)', html_text, flags=re.S | re.I)
     date_re = re.compile(r"\d{1,2}\.\d{1,2}\.\d{4}")
     for ul in uls:
         if date_re.search(ul):
@@ -140,15 +155,23 @@ def write_json(path, data):
     os.replace(tmp, path)
 
 def main():
-    try:
-        html_text = fetch_html(BUUKKAA_URL)
-    except Exception as e:
-        print("Direct fetch failed, attempting AllOrigins fallback:", e)
+    html_text = None
+    last_err = None
+
+    for source in PROXY_URLS:
         try:
-            html_text = fetch_html(ALLORIGINS + urllib.parse.quote(BUUKKAA_URL, safe=''))
-        except Exception as e2:
-            print("Fallback fetch failed:", e2)
-            return 1
+            print(f"Fetching HTML from: {source}")
+            html_text = fetch_html(source)
+            break
+        except Exception as e:
+            print(f"Fetch from {source} failed: {e}")
+            last_err = e
+
+    if html_text is None:
+        print("All fetch attempts failed.")
+        if last_err:
+            print(last_err)
+        return 1
 
     ul = find_upcoming_list(html_text)
     if not ul:

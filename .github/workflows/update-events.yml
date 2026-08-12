@@ -19,6 +19,10 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --quiet requests
+
       - name: Run fetch script
         run: |
           python3 scripts/fetch_gigs.py
