@@ -21,13 +21,24 @@ def fetch_html(url, retries=3, timeout=30):
     last_err = None
     for attempt in range(1, retries + 1):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "github-actions/1.0"})
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "User-Agent": "github-actions/1.0",
+                    "Accept-Encoding": "identity",
+                    "Connection": "close"
+                }
+            )
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 try:
                     data = resp.read()
                 except http.client.IncompleteRead as ir:
                     data = ir.partial or b""
-                return data.decode("utf-8", "ignore")
+                    print(f"IncompleteRead on attempt {attempt}, got {len(data)} bytes")
+                html_text = data.decode("utf-8", "ignore")
+                if not html_looks_complete(html_text):
+                    raise ValueError("Fetched HTML appears incomplete or missing expected markers")
+                return html_text
         except Exception as e:
             last_err = e
             backoff = attempt * 2
@@ -35,6 +46,18 @@ def fetch_html(url, retries=3, timeout=30):
             time.sleep(backoff)
 
     raise last_err
+
+def html_looks_complete(html_text):
+    if len(html_text) < 10000:
+        return False
+    if '<body' not in html_text.lower():
+        return False
+    if 'tulevat' not in html_text.lower():
+        return False
+    if '<ul' not in html_text.lower():
+        return False
+    return True
+
 
 def find_upcoming_list(html_text):
     # try to find the 'Tulevat' heading, then the next <ul> block
