@@ -4,18 +4,37 @@ Fetch upcoming gigs from Buukkaa and write data/events.json
 Designed to run in CI (GitHub Actions) where network access is allowed.
 """
 import urllib.request
+import urllib.error
+import urllib.parse
+import http.client
+import time
 import re
 import json
 import os
 import html
 
 BUUKKAA_URL = "https://buukkaa-bandi.fi/fi/band/wallan-tuntemattomat"
+ALLORIGINS = "https://api.allorigins.win/raw?url="
 OUT_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "events.json")
 
-def fetch_html(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "github-actions/1.0"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.read().decode("utf-8", "ignore")
+def fetch_html(url, retries=3, timeout=30):
+    last_err = None
+    for attempt in range(1, retries + 1):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "github-actions/1.0"})
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                try:
+                    data = resp.read()
+                except http.client.IncompleteRead as ir:
+                    data = ir.partial or b""
+                return data.decode("utf-8", "ignore")
+        except Exception as e:
+            last_err = e
+            backoff = attempt * 2
+            print(f"Fetch attempt {attempt} failed: {e}; retrying in {backoff}s...")
+            time.sleep(backoff)
+
+    raise last_err
 
 def find_upcoming_list(html_text):
     # find the 'Tulevat' heading, then the next <ul> block
@@ -77,8 +96,12 @@ def main():
     try:
         html_text = fetch_html(BUUKKAA_URL)
     except Exception as e:
-        print("Failed to fetch source:", e)
-        return 1
+        print("Direct fetch failed, attempting AllOrigins fallback:", e)
+        try:
+            html_text = fetch_html(ALLORIGINS + urllib.parse.quote(BUUKKAA_URL, safe=''))
+        except Exception as e2:
+            print("Fallback fetch failed:", e2)
+            return 1
 
     ul = find_upcoming_list(html_text)
     if not ul:
