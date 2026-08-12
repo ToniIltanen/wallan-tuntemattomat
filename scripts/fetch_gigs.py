@@ -37,20 +37,23 @@ def fetch_html(url, retries=3, timeout=30):
     raise last_err
 
 def find_upcoming_list(html_text):
-    # find the 'Tulevat' heading, then the next <ul> block
-    idx = html_text.find("Tulevat")
-    if idx == -1:
-        return None
+    # try to find the 'Tulevat' heading, then the next <ul> block
+    idx = html_text.lower().find("tulevat")
+    if idx != -1:
+        ul_start = html_text.find("<ul", idx)
+        if ul_start != -1:
+            ul_end = html_text.find("</ul>", ul_start)
+            if ul_end != -1:
+                return html_text[ul_start:ul_end+6]
 
-    ul_start = html_text.find("<ul", idx)
-    if ul_start == -1:
-        return None
+    # fallback: scan all <ul> blocks and pick first one containing a Finnish date
+    uls = re.findall(r'(<ul[^>]*>.*?</ul>)', html_text, flags=re.S|re.I)
+    date_re = re.compile(r"\d{1,2}\.\d{1,2}\.\d{4}")
+    for ul in uls:
+        if date_re.search(ul):
+            return ul
 
-    ul_end = html_text.find("</ul>", ul_start)
-    if ul_end == -1:
-        return None
-
-    return html_text[ul_start:ul_end+6]
+    return None
 
 def extract_list_items(ul_block):
     items = re.findall(r"<li[^>]*>(.*?)</li>", ul_block, flags=re.S|re.I)
