@@ -13,11 +13,32 @@ import json
 import os
 import html
 
+try:
+    import requests
+except ImportError:
+    requests = None
+
 BUUKKAA_URL = "https://buukkaa-bandi.fi/fi/band/wallan-tuntemattomat"
 ALLORIGINS = "https://api.allorigins.win/raw?url="
 OUT_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "events.json")
 
 def fetch_html(url, retries=3, timeout=30):
+    if requests:
+        for attempt in range(1, retries + 1):
+            try:
+                resp = requests.get(url, headers={"User-Agent": "github-actions/1.0"}, timeout=timeout)
+                resp.raise_for_status()
+                html_text = resp.text
+                if not html_looks_complete(html_text):
+                    raise ValueError("Fetched HTML appears incomplete or missing expected markers")
+                return html_text
+            except Exception as e:
+                last_err = e
+                backoff = attempt * 2
+                print(f"Requests attempt {attempt} failed: {e}; retrying in {backoff}s...")
+                time.sleep(backoff)
+        raise last_err
+
     last_err = None
     for attempt in range(1, retries + 1):
         try:
@@ -42,7 +63,7 @@ def fetch_html(url, retries=3, timeout=30):
         except Exception as e:
             last_err = e
             backoff = attempt * 2
-            print(f"Fetch attempt {attempt} failed: {e}; retrying in {backoff}s...")
+            print(f"Urllib attempt {attempt} failed: {e}; retrying in {backoff}s...")
             time.sleep(backoff)
 
     raise last_err
