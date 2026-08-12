@@ -109,6 +109,31 @@ def main():
     ul = find_upcoming_list(html_text)
     if not ul:
         print("Could not locate upcoming list in HTML")
+        # Diagnostic info for CI: print HTML length, locations of 'Tulevat', number of <ul> blocks
+        try:
+            lt = html_text
+            print("Fetched HTML length:", len(lt))
+            low = lt.lower()
+            hits = [i for i in range(len(low)) if low.startswith('tulevat', i)]
+            print("'Tulevat' occurrences:", len(hits), "positions:", hits[:10])
+            uls = re.findall(r'(<ul[^>]*>.*?</ul>)', lt, flags=re.S|re.I)
+            print("<ul> blocks found:", len(uls))
+            for i,u in enumerate(uls[:3]):
+                snippet = re.sub(r'\s+', ' ', u)[:500]
+                print(f'ul[{i}] snippet:', snippet)
+        except Exception as _:
+            pass
+
+        # Save full fetched HTML for debugging in artifact
+        try:
+            outdir = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+            os.makedirs(outdir, exist_ok=True)
+            with open(os.path.join(outdir, 'last_fetch.html'), 'w', encoding='utf-8') as fh:
+                fh.write(lt)
+            print('Wrote debug HTML to data/last_fetch.html')
+        except Exception as e:
+            print('Failed to write debug HTML:', e)
+
         return 1
 
     events = extract_list_items(ul)
