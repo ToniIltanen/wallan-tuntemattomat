@@ -60,6 +60,12 @@
     "venue": "yksityistilaisuus"
   },
   {
+    "date": "2027-07-24",
+    "displayDate": "24.7.2027",
+    "city": "Pori",
+    "venue": "yksityistilaisuus"
+  },
+  {
     "date": "2027-07-31",
     "displayDate": "31.7.2027",
     "city": "Nakkila",
@@ -69,6 +75,12 @@
     "date": "2027-08-14",
     "displayDate": "14.8.2027",
     "city": "Rauma",
+    "venue": "yksityistilaisuus"
+  },
+  {
+    "date": "2028-06-03",
+    "displayDate": "3.6.2028",
+    "city": "Ulvila",
     "venue": "yksityistilaisuus"
   }
 ]
