@@ -1,11 +1,5 @@
 [
   {
-    "date": "2026-09-12",
-    "displayDate": "12.9.2026",
-    "city": "Sastamala",
-    "venue": "yksityistilaisuus"
-  },
-  {
     "date": "2026-11-14",
     "displayDate": "14.11.2026",
     "city": "Koski Tl",
@@ -34,6 +28,12 @@
     "displayDate": "5.12.2026",
     "city": "Ypäjä",
     "venue": "Karrinpuomi"
+  },
+  {
+    "date": "2027-05-29",
+    "displayDate": "29.5.2027",
+    "city": "Rauma",
+    "venue": "yksityistilaisuus"
   },
   {
     "date": "2027-07-03",
